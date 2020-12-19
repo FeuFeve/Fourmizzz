@@ -1,0 +1,147 @@
+
+Je présente maintenant un exemple un peu plus consistent.
+
+
+On simule ici une [b]attaque en loge[/b], telle que :
+
+[color=#c5130f]Attaquant : 1G JSN, 60M SN, 500M JS, 100M S, 10M C, 100M SE, 300M Tk, 350M TkE, 25M Tu, 50M TuE
+Niveaux attaquant : A23, B21, E13[/color]
+
+[color=#0000FF]Défenseur : 800M JSN, 400M SN, 30M SE, 20M C, 15M CE, 100M A, 150M AE, 50M TkE, 125M TuE
+Niveaux défenseur : A19, B24, L27[/color]
+
+
+--------------------------------------------------
+
+
+[b]1 - Calculer le total d'xp requise par l'armée gagnante :[/b]
+
+
+Pour rappel, les valeurs d'xp des unités sont les suivantes :
+85, 125, 170, 227, 312, 434, 592, 295, 349, 460, 642, 990, 909, 1000
+(de la JSN à la TuE, par ordre de ponte)
+
+[color=#c5130f][b]XP requise att[/b][/color] = 1G*85 + 60M*125 + 500M*227 + 100M*312 + 10M*434 + 100M*460 + 300M642 + 350M*990 + 25M*909 + 50M*1000
+= 85 000M + 7 500M + 113 500M + 31 200M + 4 340M + 46 000M + 192 600M + 346 500M + 22 725M + 50 000M
+[color=#c5130f][b]= 899 365M de points d'xp[/b][/color]
+
+
+--------------------------------------------------
+
+
+[b]2 - Calculer le total d'xp droppée par l'armée perdante :[/b]
+
+
+[color=#0000FF]XP requise def (HB)[/color] = 800M*85 + 400M*125 + 30M*170 + 20M*434 + 15M*592 + 100M*295 + 150M*349 + 50M*990 + 125M*1000
+= 68 000M + 50 000M + 5 100M + 8 680M + 8 880M + 29 500M + 52 350M + 49 500M + 125 000M
+[color=#0000FF]= 397 010M[/color]
+
+[b]L'xp droppée est égale à 0.66 * l'xp requise[/b]. Donc l'xp droppée par l'armée en défense sera ici de :
+
+[color=#0000FF][b]XP droppée def[/b][/color] = 0.66 * 397 010M [color=#0000FF][b]= 262 026.6M de points d'xp[/b][/color]
+
+
+--------------------------------------------------
+
+
+[b]3 - Calculer le ratio xp requise / xp droppée :[/b]
+
+
+On a :
+
+[color=#c5130f]XP requise att = 899 365M de points d'xp[/color]
+[color=#0000FF]XP droppée def = 262 026.6M de points d'xp[/color]
+
+Ce qui donne donc un ratio de :
+
+[b]Ratio[/b] = [color=#c5130f]899 365 000 000[/color] / [color=#0000FF]262 026 600 000[/color] [b]= 3,4323423652407808978172445087636[/b] (je sais que les nombres à virgules comme ça sont immondes, mais c'est important de garder la plus grande précision possible)
+
+
+--------------------------------------------------
+
+
+[b]4 - Calculer le taux d'xp [u]HB[/u] des unités survivantes :[/b]
+
+
+On commence par mettre le Ratio au carré :
+[b]Ratio²[/b] = Ratio * Ratio = [b]11,78097411222667817757970415074[/b] (idem, la précision est nécessaire)
+
+Puis on prend l'inverse de ce Ratio² pour obtenir le taux d'xp [u]HB[/u] des unités survivantes :
+[b]Taux d'xp [u]HB[/u][/b] = 1 / Ratio² [b]= 0.08488262434616229817966255655272[/b] (soit 8.49%, mais là encore la précision est importante)
+
+
+--------------------------------------------------
+
+
+[b]5 - Calculer le taux d'xp [u]AB[/u] des unités survivantes :[/b]
+
+
+On commence par calculer les différents facteurs :
+
+Pour rappel :
+
+[color=#c5130f]Niveaux attaquant : A23, B21, E13[/color]
+[color=#0000FF]Niveaux défenseur : A19, B24, L27[/color]
+
+On précise avec une lettre minuscule "[b]a[/b]" pour attaquant, et "[b]d[/b]" pour défenseur.
+
+On a donc :
+
+[color=#c5130f][b]FacteurAa[/b][/color] = 1 + (0.1 * 23) [color=#c5130f][b]= 3.3[/b][/color]
+[color=#c5130f][b]FacteurVa(TdC)[/b][/color] = 1 + (0.1 * 21) [color=#c5130f][b]= 3.1[/b][/color]
+
+[color=#0000FF][b]FacteurAd[/b][/color] = 1 + (0.1 * 19) [color=#0000FF][b]= 2.9[/b][/color]
+FacteurVd(TdC) = 1 + (0.1 * 24) = 3.4
+[color=#0000FF][b]FacteurVd([u]Loge[/u])[/b][/color] = FacteurVd(TdC) + 0.3 + (0.15 * 27) = 3.4 + 4.35 [color=#0000FF][b]= 7.75[/b][/color]
+
+[color=#09750c][b]FacteurXP[/b][/color] = 1 + (0.1 * 13) [color=#09750c][b]= 2.3[/b][/color]
+
+
+On peut alors finalement calculer le taux d'xp AB :
+
+[b]Taux d'xp [u]AB[/u][/b] = [b]Taux d'xp [u]HB[/u][/b] / [color=#c5130f][b]FacteurAa[/b][/color] / [color=#c5130f][b]FacteurVa[/b][/color] * [color=#0000FF][b]FacteurAd[/b][/color] * [color=#0000FF][b]FacteurVd([u]lieu de combat[/u])[/b][/color] * [color=#09750c][b]FacteurXP[/b][/color]
+Taux d'xp AB = 8,488262434616229817966255655272 / 3.3 / 3.1 * 2.9 * 7.75 * 2.3
+[b]Taux d'xp [u]AB[/u] = 42,891447302189585519571913045958%[/b]
+
+
+--------------------------------------------------
+
+
+[b]Selon les calculs que nous venons de réaliser, environ 42.89% des troupes survivantes vont xp.[/b]
+
+Ça nous donnerait ici, en sachant que sur le G de JSN de l'attaquant, 181 600 806 vont mourir :
+[b]- 351 023 25[u]9[/u] JSN -> SN
+- 25 734 868 SN -> NE
+- 214 457 236 JS -> S
+- 42 891 447 S -> SE
+- 4 289 144 C -> CE
+- 128 674 341 Tk -> TkE
+- 10 722 861 Tu -> TuE[/b]
+
+
+--------------------------------------------------
+
+
+[b]Je poste ici le RC obtenu via le simulateur de combat du C+[/b] (les résultats sont donc les mêmes qu'en conditions réelles) :
+
+[color=#c5130f]Troupes en attaque : 1 000 000 000 Jeunes Soldates Naines, 60 000 000 Soldates Naines, 500 000 000 Jeunes Soldates, 100 000 000 Soldates, 10 000 000 Concierges, 100 000 000 Soldates d’élites, 300 000 000 Tanks, 350 000 000 Tanks d’élites, 25 000 000 Tueuses, 50 000 000 Tueuses d’élites.[/color]
+[color=#0000FF]Troupes en défense : 800 000 000 Jeunes Soldates Naines, 400 000 000 Soldates Naines, 30 000 000 Naines d’Elites, 20 000 000 Concierges, 15 000 000 Concierges d’élites, 100 000 000 Artilleuses, 150 000 000 Artilleuses d’élites, 50 000 000 Tanks d’élites, 125 000 000 Tueuses d’élites.[/color]
+
+[color=#c5130f]Vous infligez 60 710 000 000 (+ 139 633 000 000) dégâts et tuez 1 690 000 000 ennemies.[/color]
+[color=#0000FF]L’ennemie inflige 1 553 000 000 (+ 2 950 700 000) dégâts à vos fourmis et en tue 181 600 806.[/color]
+
+Écrasante victoire ! A peine le temps de se dégourdir les pattes qu’ils étaient tous morts ...
+Vous avez gagné cette bataille !
+
+Les unités survivantes ont appris de cette bataille :
+[b]- 351 023 25[u]8[/u] Jeunes Soldates Naines sont devenues des Soldates Naines
+- 25 734 868 Soldates Naines sont devenues des Naines d’Elites
+- 214 457 236 Jeunes Soldates sont devenues des Soldates
+- 42 891 447 Soldates sont devenues des Soldates d’élites
+- 4 289 144 Concierges sont devenues des Concierges d’élites
+- 128 674 341 Tanks sont devenues des Tanks d’élites
+- 10 722 861 Tueuses sont devenues des Tueuses d’élites[/b]
+
+
+--> [b]Les résultats obtenus sont corrects[/b], à 1 JSN près (la marge d'erreur me semble acceptable au vu la taille des armées)
+

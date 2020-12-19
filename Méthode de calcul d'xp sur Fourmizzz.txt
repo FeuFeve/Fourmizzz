@@ -1,0 +1,127 @@
+
+Ce rapport présente la méthode de calcul d'xp sur Fourmizzz.
+
+
+[b]Explications préliminaires :[/b]
+
+Chaque unité du jeu possède une valeur d'xp "cachée". Cette valeur résulte certainement d'un calcul dépendant des stats de l'unité, mais je n'ai pas réussi à le déterminer (c'est la seule pièce manquante).
+De nombreuses simulations m'ont néanmoins permis de trouver ces valeurs d'xp pour les différentes unités :
+[b]85, 125, 170, 227, 312, 434, 592, 295, 349, 460, 642, 990, 909, 1000[/b]
+(de la JSN à la TuE, par ordre de ponte)
+Ces valeurs m'ont été confirmées par [b]Jokovitch[/b] (merci à lui !).
+
+[b]Autrement dit : une JSN a besoin de 85 points d'xp pour pour devenir une SN.[/b]
+[b]Par ailleurs, les troupes droppent 66% de leur valeur d'xp à leur mort[/b] (c'est bien 66%, pas 2/3), donc une JSN droppe 85 * 0.66 = 56.1 points d'xp à sa mort.
+
+
+--------------------------------------------------
+
+
+[b]Méthode de calcul de l'xp des unités survivantes d'un combat :[/b]
+
+
+[b]1 - Calculer le total d'xp requise par l'armée gagnante :[/b]
+
+Total d'xp requise = somme(nombre de troupes pour l'unité * valeur d'xp pour l'unité) pour chaque unité
+Exemple : 1000 JSN * 85 d'xp + 500 Tk * 642 d'xp = 406 000 points d'xp
+
+
+[b]2 - Calculer le total d'xp droppée par l'armée perdante :[/b]
+
+On calcule d'abord le "Total d'xp requise" pour l'armée du perdant (même méthode qu'au dessus), puis on le multiplie par 0.66 pour obtenir l'xp droppée.
+
+
+[b]3 - Calculer le ratio xp requise / xp droppée :[/b]
+
+Ratio = Total d'xp requise / Total d'xp droppée
+(l'xp requise correspond donc à celle de l'armée gagnante, et l'xp droppée à celle de l'armée perdante)
+Exemple : 400M / 100M = 4
+
+
+[b]4 - Calculer le taux d'xp HB des unités survivantes :[/b]
+
+Le taux d'xp HB (Hors Bonus) correspond à l'xp qu'on obtiendrait si les niveaux d'armes et de boucliers thoraciques de l'attaquant et du défenseur étaient à 0, ainsi que le niveau de dôme ou loge du défenseur si le combat s'y déroule, et l'étable à cochenilles du gagnant. Ces valeurs interviendront après.
+
+Taux d'xp HB = 1 / Ratio²
+Exemple : 1/4² = 1/16 = 0.0625 = 6.25%
+Ce qui voudrait dire qu'ici, si aucun des joueurs n'a de bonus, 6.25% des troupes [u]survivantes[/u] passeraient au niveau suppérieur.
+
+
+[b]5 - Calculer le taux d'xp AB des unités survivantes :[/b]
+
+Le taux d'xp AB (Avec Bonus) correspond à l'xp réelle, et prend en compte les niveaux mentionnés plus haut qui avaient été ignorés jusque là.
+
+
+[b]Notons les bonus de la façon suivante :[/b]
+A = niveau d'armes
+B = niveau de boucliers thoraciques
+D = niveau de dôme
+L = niveau de loge
+E = niveau d'étable à cochenilles
+
+Appelons maintenant "[b]FacteurA[/b]" le multiplicateur d'attaque, "[b]FacteurV[/b]" le multiplicateur de vie, et "[color=#09750c][b]FacteurXP[/b][/color]" le multiplicateur d'xp droppée, on a :
+
+[b]FacteurA = 1 + (0.1 * A)
+FacteurV(TdC) = 1 + (0.1 * B)
+FacteurV(Dôme) = FacteurV(TdC) + 0.1 + (0.05 * D)
+FacteurV(Loge) = FacteurV(TdC) + 0.3 + (0.15 * L)
+FacteurXP = 1 + (0.1 * E)[/b]
+
+On précise également avec une deuxième lettre "[b]a[/b]" pour attaquant, ou "[b]d[/b]" pour défenseur, comme suit :
+
+Aa = niveau d'armes de l'attaquant
+Ld = niveau de loge du défenseur
+etc.
+
+
+Ces facteurs ont une influence sur l'xp finale des unités survivantes, tel que :
+
+Si le gagnant est [color=#c5130f]l'attaquant[/color] :
+
+[b]Taux d'xp [u]AB[/u][/b] = [b]Taux d'xp [u]HB[/u][/b] / [color=#c5130f][b]FacteurAa[/b][/color] / [color=#c5130f][b]FacteurVa[/b][/color] * [color=#0000FF][b]FacteurAd[/b][/color] * [color=#0000FF][b]FacteurVd(lieu de combat)[/b][/color] * [b][color=#09750c]FacteurXP[/color][color=#c5130f]a[/color][/b]
+
+Et si le gagnant est le [color=#0000FF]défenseur[/color] :
+
+[b]Taux d'xp [u]AB[/u][/b] = [b]Taux d'xp [u]HB[/u][/b] / [color=#0000FF][b]FacteurAd[/b][/color] / [color=#0000FF][b]FacteurVd(lieu de combat)[/b][/color] * [color=#c5130f][b]FacteurAa[/b][/color] * [color=#c5130f][b]FacteurVa[/b][/color] * [b][color=#09750c]FacteurXP[/color][color=#0000FF]d[/color][/b]
+
+Les opérations sont à réaliser de gauche à droite (attention aux calculateurs qui favorisent la multiplication sur la divison).
+
+
+Exemple :
+
+[color=#c5130f]L'attaquant[/color] a les niveaux suivants : Armes 23, Boucliers 24, Étable à cochenilles 11
+[color=#0000FF]Le défenseur[/color] a les niveaux suivants : Armes 21, Boucliers 23, Loge 28
+
+Pour un combat se déroulant en [b]loge[/b], et si le gagnant est [color=#c5130f]l'attaquant[/color] et que le taux d'xp [u]HB[/u] est le 10%, le calcul à réaliser est le suivant :
+
+[b]Taux d'xp [u]AB[/u][/b] = [b]Taux d'xp [u]HB[/u][/b] / [color=#c5130f][b]FacteurAa[/b][/color] / [color=#c5130f][b]FacteurVa[/b][/color] * [color=#0000FF][b]FacteurAd[/b][/color] * [color=#0000FF][b]FacteurVd(lieu de combat)[/b][/color] * [b][color=#09750c]FacteurXP[/color][color=#c5130f]a[/color][/b]
+Taux d'xp AB = 10% / [color=#c5130f]3.3[/color] / [color=#c5130f]3.4[/color] * [color=#0000FF]3.1[/color] * [color=#0000FF](1 + 2.1 + 0.3 + 0.15 * 28)[/color] * [color=#09750c]2.1[/color]
+Taux d'xp AB = 10% / [color=#c5130f]3.3[/color] / [color=#c5130f]3.4[/color] * [color=#0000FF]3.1[/color] * [color=#0000FF]7,6[/color] * [color=#09750c]2.1[/color]
+[b]Taux d'xp [u]AB[/u] ~= 44.1%[/b]
+
+
+--------------------------------------------------
+
+
+[b]Remarques :[/b]
+
+- [b]Les OS 10/30/50 n'affectent en rien le taux d'xp[/b]
+- [b]Ces calculs s'appliquent aussi aux xp en 2 tours ou plus[/b] (il n'y a rien à changer pour calculer le taux d'xp). Les xp en 2/3 tours contre des tanks sont donc plus rentables simplement parce que l'armée attaquante est plus petite (l'xp requise par l'armée attaquante est donc elle aussi plus petite)
+
+
+[b]Observations :[/b]
+
+- Le ratio "points d'attaque par point d'xp" des Artilleuses d'élite est meilleur que pour les Tanks d'élite (voir [b]*[/b] plus bas), d'où le fait que l'xp est meilleure si on complète sa FdF manquante avant tout par des AE plutôt que par des TkE (pour peu qu'on en ait à sa disposition). Je ne pense pas, par contre, que ça justifie la ponte d'A/AE
+- Il n'y a pas de caste d'unité qui "XP mieux contre une autre"/"dans certaines situations". Le calcul ne change pas. Si une unité est plus rentable dans une situation, elle le sera peu importe l'armée adverse (sauf si la position passe d'attaquant à défenseur, du coup)
+- Si "x" le taux d'xp (exemple : 10%) obtenu en faisant s'affronter les armées "y" et "z", alors également x le taux d'xp si u*y et u*z s'affrontent, avec "u" quelconque
+- Si "x" le taux d'xp obtenu en faisant s'affronter deux armées :
+... Alors x/4 si on multiplie l'armée gagnant le combat par 2
+... Et x*4 si on divise l'armée gagnant le combat par 2
+Et inversement pour l'armée perdante (x/4 si divisée par 2, x*4 si multipliée par 2)
+
+
+[b]*[/b] Points d'attaque par point d'xp :
+AE : 35 d'attaque / 349 points d'xp ~= 0.100 att/xp
+TkE : 80 d'attaque / 990 points d'xp ~= 0.081 att/xp
+0.100 > 0.081, donc la FdF amenée par les AE sera moins coûteuse en XP que celle amenée par les TkE
+
