@@ -5,18 +5,18 @@ import io
 
 young_dwarves = [8, 3, 2, "Young dwarves", "Young dwarf", "Jeunes Soldates Naines", "Jeune Soldate Naine"]
 dwarves = [10, 5, 4, "Dwarves", "Dwarf", "Soldates Naines", "Soldate Naine"]
-top_dwarves = [13, 7, 6, "Top dwarves", "Top dwarf", "Naines d’Elites", "Naine d’Elite"]
+top_dwarves = [13, 7, 6, "Top dwarves", "Top dwarf", "Naines d'Elites", "Naine d'Elite"]
 young_soldiers = [16, 10, 9, "Young soldiers", "Young soldier", "Jeunes Soldates", "Jeune Soldate"]
 soldiers = [20, 15, 14, "Soldiers", "Soldier", "Soldates", "Soldate"]
 doorkeepers = [30, 1, 25, "Doorkeepers", "Doorkeeper", "Concierges", "Concierge"]
-top_doorkeepers = [40, 1, 35, "Top doorkeepers", "Top doorkeeper", "Concierges d’élites", "Concierge d’élite"]
+top_doorkeepers = [40, 1, 35, "Top doorkeepers", "Top doorkeeper", "Concierges d'Elites", "Concierge d'Elite"]
 fire_ants = [10, 30, 15, "Fire ants", "Fire ant", "Artilleuses", "Artilleuse"]
-top_fire_ants = [12, 35, 18, "Top fire ants", "Top fire ant", "Artilleuses d’élites", "Artilleuse d’élite"]
-top_soldiers = [27, 24, 23, "Top soldiers", "Top soldier", "Soldates d’élites", "Soldate d’élite"]
+top_fire_ants = [12, 35, 18, "Top fire ants", "Top fire ant", "Artilleuses d'Elites", "Artilleuse d'Elite"]
+top_soldiers = [27, 24, 23, "Top soldiers", "Top soldier", "Soldates d'Elites", "Soldate d'Elite"]
 tanks = [35, 55, 1, "Tanks", "Tank", "Tanks", "Tank"]
-top_tanks = [50, 80, 1, "Top tanks", "Top tanks", "Tanks d’élites", "Tank d’élite"]
+top_tanks = [50, 80, 1, "Top tanks", "Top tanks", "Tanks d'Elites", "Tank d'Elite"]
 killers = [50, 50, 50, "Killers", "Killer", "Tueuses", "Tueuse"]
-top_killers = [55, 55, 55, "Top killers", "Top killer", "Tueuses d’élites", "Tueuse d’élite"]
+top_killers = [55, 55, 55, "Top killers", "Top killer", "Tueuses d'Elites", "Tueuse d'Elite"]
 
 antz_units = [young_dwarves, dwarves, top_dwarves, young_soldiers, soldiers, doorkeepers, top_doorkeepers,
               fire_ants, top_fire_ants, top_soldiers, tanks, top_tanks, killers, top_killers]
@@ -26,7 +26,13 @@ antz_units = [young_dwarves, dwarves, top_dwarves, young_soldiers, soldiers, doo
 
 # Get a formatted string version of a big number
 # e.g. format_number(12345678) will return "12 345 678"
+# e.g. format_number(1234.3) will return "1 234"
+# e.g. format_number("?") will return "?"
 def format_number(number):
+    try:
+        number = int(round(float(number)))
+    except ValueError:
+        return "?"
     return '{:,}'.format(number).replace(',', ' ')
 
 
@@ -70,6 +76,7 @@ def parse_troops(line_to_parse):
         offset = 2
     for unit in units:
         for j in range(14):
+            unit = unit.replace("’", "'").replace("é", "E")
             if unit.endswith(antz_units[j][3 + offset]) or unit.endswith(antz_units[j][4 + offset]):
                 army[j] = int(''.join(c for c in unit if c.isdigit()))
                 break
@@ -82,14 +89,16 @@ def parse_troops(line_to_parse):
 #   dead_troops: e.g. 200
 # Output (for the example above): [0, 133, 0, 0, 333, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 def get_remaining_troops(army, dead_troops):
+    remaining_army = [0] * 14
     for i in range(14):
-        if dead_troops >= army[i]:
+        remaining_army[i] = army[i]
+        if dead_troops > army[i]:
             dead_troops -= army[i]
-            army[i] = 0
+            remaining_army[i] = 0
         else:
-            army[i] -= dead_troops
-            break
-    return army
+            remaining_army[i] -= dead_troops
+            dead_troops = 0
+    return remaining_army
 
 
 # Calculate the army that died the first turn, and the life of that army without shields/dome/nest bonuses
@@ -199,6 +208,48 @@ def calculate_defender_shields_and_place_level(place):
         return shields, place_level
 
 
+# Calculate the stats of an army
+# Input:
+#   army: e.g. [50, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+#   weapons, shields, dome, nest: e.g. 23, 23, "?", 27
+# Output:
+#   [attack, defense, hf_life, anthill_life, nest_life]
+#   e.g. [1320, 990, 2970, "?", 6885]
+def calculate_army_stats(army, weapons, shields, dome, nest):
+    attack, defense, hf_life, anthill_life, nest_life = 0, 0, 0, 0, 0
+    damage_multiplier, hf_life_multiplier, anthill_life_multiplier, nest_life_multiplier = 0, 0, 0, 0
+
+    if weapons != "?":
+        damage_multiplier = (weapons/10 + 1)
+    else:
+        attack, defense = "?", "?"
+    if shields != "?":
+        hf_life_multiplier = (shields/10 + 1)
+        if dome != "?":
+            anthill_life_multiplier = hf_life_multiplier + 0.1 + (dome * 0.05)
+        else:
+            anthill_life = "?"
+        if nest != "?":
+            nest_life_multiplier = hf_life_multiplier + 0.3 + (nest * 0.15)
+        else:
+            nest_life = "?"
+    else:
+        hf_life, anthill_life, nest_life = "?", "?", "?"
+
+    for i in range(14):
+        if weapons != "?":
+            attack += army[i] * antz_units[i][1] * damage_multiplier
+            defense += army[i] * antz_units[i][2] * damage_multiplier
+        if shields != "?":
+            hf_life += army[i] * antz_units[i][0] * hf_life_multiplier
+            if dome != "?":
+                anthill_life += army[i] * antz_units[i][0] * anthill_life_multiplier
+            if nest != "?":
+                nest_life += army[i] * antz_units[i][0] * nest_life_multiplier
+
+    return [attack, defense, hf_life, anthill_life, nest_life]
+
+
 # ********************** MAIN ********************** #
 
 # The combat report from Antzzz
@@ -271,7 +322,7 @@ if __name__ == '__main__':
             if turn < 2:
                 base_attack = int(''.join(c for c in splitted_line[0] if c.isdigit()))
                 bonus_attack = int(''.join(c for c in splitted_line[1] if c.isdigit()))
-                weapons = int(round(bonus_attack / base_attack, 1) * 10)
+                weapons_lvl = int(round(bonus_attack / base_attack, 1) * 10)
                 if attacker_weapons == "?":
                     if base_attack < 10:
                         if is_english:
@@ -281,7 +332,7 @@ if __name__ == '__main__':
                                   "niveau d'Armes de l'attaquant")
                     else:
                         first_turn_attacker_damages = base_attack + bonus_attack
-                        attacker_weapons = weapons
+                        attacker_weapons = weapons_lvl
                         first_turn_defender_dead = dead
                 else:
                     if base_attack < 10:
@@ -293,7 +344,7 @@ if __name__ == '__main__':
                                   "niveau d'Armes du défenseur")
                     else:
                         first_turn_defender_damages = base_attack + bonus_attack
-                        defender_weapons = weapons
+                        defender_weapons = weapons_lvl
                         first_turn_attacker_dead = dead
             turn += 0.5
 
@@ -312,6 +363,17 @@ if __name__ == '__main__':
     elif attack_place[0] == "Nest":
         defender_shields, defender_nest = calculate_defender_shields_and_place_level(attack_place[0])
 
+    attacker_surviving_army = get_remaining_troops(attacker_army, total_attacker_dead)
+    defender_surviving_army = get_remaining_troops(defender_army, total_defender_dead)
+
+    attacker_surviving_troops = get_readable_army(attacker_surviving_army)
+    defender_surviving_troops = get_readable_army(defender_surviving_army)
+
+    attacker_surviving_army_stats = calculate_army_stats(attacker_surviving_army, attacker_weapons, attacker_shields,
+                                                         "?", "?")
+    defender_surviving_army_stats = calculate_army_stats(defender_surviving_army, defender_weapons, defender_shields,
+                                                         defender_dome, defender_nest)
+
     # RESULTS
 
     if is_english:
@@ -324,17 +386,39 @@ if __name__ == '__main__':
 
         print("\n# Defender stats:")
         print("Weapons = " + str(defender_weapons))
-        print("Shields = " + str(defender_shields))
-        print("Dome = " + str(defender_dome))
-        print("Nest = " + str(defender_nest))
+        hf_warning, dome_warning, nest_warning = "", "", ""
+        if defender_shields != "?":
+            if defender_dome != "?":
+                hf_warning = " (might be off: see dome/nest warning(s) to know more)"
+                dome_warning = " (might be off: +1 Shields = -2 Dome, and vice versa)"
+            if defender_nest != "?":
+                hf_warning = " (might be off: see dome/nest warning(s) to know more)"
+                nest_warning = " (might be off: +3 Shields = -2 Nest, and vice versa)"
+        print("Shields = " + str(defender_shields) + hf_warning)
+        print("Dome = " + str(defender_dome) + dome_warning)
+        print("Nest = " + str(defender_nest) + nest_warning)
 
         print("\n# Attacker's army:")
         print("Before:", get_readable_army(attacker_army))
-        print("After (no xp!):", get_readable_army(get_remaining_troops(attacker_army, total_attacker_dead)))
+        print("After (no xp!):", attacker_surviving_troops)
+
+        if attacker_surviving_troops != "None.":
+            print("\n# Attacker army stats after (no xp!):")
+            print("Attack:", format_number(attacker_surviving_army_stats[0]))
+            print("Defense:", format_number(attacker_surviving_army_stats[1]))
+            print("HF life:", format_number(attacker_surviving_army_stats[2]))
 
         print("\n# Defender's army:")
         print("Before:", get_readable_army(defender_army))
-        print("After (no xp!):", get_readable_army(get_remaining_troops(defender_army, total_defender_dead)))
+        print("After (no xp!):", defender_surviving_troops)
+
+        if defender_surviving_troops != "None.":
+            print("\n# Defender army stats after (no xp!):")
+            print("Attack:", format_number(defender_surviving_army_stats[0]))
+            print("Defense:", format_number(defender_surviving_army_stats[1]))
+            print("HF life:", format_number(defender_surviving_army_stats[2]) + hf_warning)
+            print("Anthill life:", format_number(defender_surviving_army_stats[3]) + dome_warning)
+            print("Nest life:", format_number(defender_surviving_army_stats[4]) + nest_warning)
 
     else:
         print("\nLieu du combat: " + attack_place[1])
@@ -346,14 +430,38 @@ if __name__ == '__main__':
 
         print("\n# Stats du défenseur:")
         print("Armes = " + str(defender_weapons))
-        print("Boucliers = " + str(defender_shields))
-        print("Dôme = " + str(defender_dome))
-        print("Loge = " + str(defender_nest))
+        hf_warning, dome_warning, nest_warning = "", "", ""
+        if defender_shields != "?":
+            if defender_dome != "?":
+                hf_warning = " (peut être imprécis : voir le(s) avertissement(s) lié(s) au Dôme/à la Loge Impériale " \
+                             "pour en savoir plus) "
+                dome_warning = " (peut être imprécis : +1 Boucliers = -2 Dôme, et vice versa)"
+            if defender_nest != "?":
+                hf_warning = " (peut être imprécis : voir le(s) avertissement(s) lié(s) au Dôme/à la Loge Impériale " \
+                             "pour en savoir plus) "
+                nest_warning = " (peut être imprécis : +3 Boucliers = -2 Loge Impériale, et vice versa)"
+        print("Boucliers = " + str(defender_shields) + hf_warning)
+        print("Dôme = " + str(defender_dome) + dome_warning)
+        print("Loge = " + str(defender_nest) + nest_warning)
 
         print("\n# Armée de l'attaquant:")
         print("Avant:", get_readable_army(attacker_army))
-        print("Après (sans xp !):", get_readable_army(get_remaining_troops(attacker_army, total_attacker_dead)))
+        print("Après (sans xp !):", attacker_surviving_troops)
+
+        if attacker_surviving_troops != "Aucune.":
+            print("\n# Stats de l'armée en attaque après le combat (sans xp !):")
+            print("Attaque:", format_number(attacker_surviving_army_stats[0]))
+            print("Défense:", format_number(attacker_surviving_army_stats[1]))
+            print("Vie TdC:", format_number(attacker_surviving_army_stats[2]))
 
         print("\n# Armée du défenseur:")
         print("Avant:", get_readable_army(defender_army))
-        print("Après (sans xp !):", get_readable_army(get_remaining_troops(defender_army, total_defender_dead)))
+        print("Après (sans xp !):", defender_surviving_troops)
+
+        if defender_surviving_troops != "Aucune.":
+            print("\n# Stats de l'armée en défense après le combat (sans xp !):")
+            print("Attaque:", format_number(defender_surviving_army_stats[0]))
+            print("Défense:", format_number(defender_surviving_army_stats[1]))
+            print("Vie TdC:", format_number(defender_surviving_army_stats[2]) + hf_warning)
+            print("Vie Dôme:", format_number(defender_surviving_army_stats[3]) + dome_warning)
+            print("Vie Loge Impériale:", format_number(defender_surviving_army_stats[4]) + nest_warning)
